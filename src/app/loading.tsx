@@ -1,0 +1,1 @@
+export default function Loading(){return <main id="main" className="message-page"><span className="eyebrow dark">RENTDOCK</span><h1>Getting things ready.</h1><p role="status">Loading equipment…</p></main>;}
