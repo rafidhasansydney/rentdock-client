@@ -6,11 +6,13 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { categories, demoEquipment, formatPrice, rentalUnit } from "@/lib/demo-equipment";
+import { useCatalogData, type Highlights } from "@/lib/catalog-client";
+import { CatalogState } from "./catalog-state";
 import { EquipmentCard } from "./equipment-card";
 import { Icon } from "./icons";
 
 const categoryDescriptions = ["Cameras & creator kits", "Tools for the job", "Screens & projectors", "Sound for every occasion", "Equipment that works", "Move more, with less hassle"];
-const heroPicks = [demoEquipment[0], demoEquipment[1], demoEquipment[2]];
+const illustrationPicks = [demoEquipment[0], demoEquipment[1], demoEquipment[2]];
 const rentalStories = [
   { name: "Ayesha Rahman", project: "Weekend photography", text: "A camera for a weekend shoot makes more sense than buying an entire kit.", initials: "AR" },
   { name: "Tanvir Ahmed", project: "Home improvement", text: "Finding a tool, its location and its daily rate together makes planning easier.", initials: "TA" },
@@ -25,8 +27,11 @@ export function HomeExperience() {
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("All equipment");
   const [heroIndex, setHeroIndex] = useState(0);
-  const heroEquipment = heroPicks[heroIndex];
-  const featured = category === "All equipment" ? demoEquipment : demoEquipment.filter(item => item.category === category);
+  const highlights = useCatalogData<Highlights>("/equipment-highlights");
+  const picks = highlights.data?.featured.slice(0, 3) ?? [];
+  const heroPicks = picks.length ? picks : illustrationPicks;
+  const heroEquipment = heroPicks[heroIndex % heroPicks.length];
+  const featured = (highlights.data?.featured ?? []).filter(item => category === "All equipment" || item.category === category);
 
   function search(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -51,13 +56,13 @@ export function HomeExperience() {
           <div className="hero-product-visual">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div className="hero-product-image" key={heroEquipment.id} initial={{ opacity: 0, x: reducedMotion ? 0 : 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: reducedMotion ? 0 : -12 }} transition={{ duration: reducedMotion ? 0 : 0.18 }}>
-                <Image className="hero-image" src={heroEquipment.image} alt={heroEquipment.imageAlt} fill priority sizes="(max-width: 760px) 90vw, 50vw" />
+                <Image unoptimized className="hero-image" src={heroEquipment.image} alt={heroEquipment.imageAlt} fill priority sizes="(max-width: 760px) 90vw, 50vw" />
               </motion.div>
             </AnimatePresence>
             <div className="stage-side-label">RENT IT. MAKE IT HAPPEN.</div>
           </div>
-          <div className="stage-product-info" aria-live="polite"><div><span>{heroEquipment.category}</span><h2>{heroEquipment.name}</h2></div><p><strong>{formatPrice(heroEquipment.price)}</strong><span> / {rentalUnit(heroEquipment.rentalType)}</span></p></div>
-          <div className="hero-picks" role="group" aria-label="Explore featured gear">{heroPicks.map((item, index) => <button className={heroIndex === index ? "hero-pick selected" : "hero-pick"} key={item.id} aria-pressed={heroIndex === index} onClick={() => setHeroIndex(index)}><Image src={item.image} alt="" width={52} height={38} /><span>{["Camera kits", "Power tools", "Projectors"][index]}</span></button>)}</div>
+          <div className="stage-product-info" aria-live="polite"><div><span>{picks.length ? heroEquipment.category : "MORE POSSIBILITIES. LESS TO OWN."}</span><h2>{picks.length ? heroEquipment.name : "Equipment for your next project"}</h2></div>{picks.length > 0 && <p><strong>{formatPrice(heroEquipment.price)}</strong><span> / {rentalUnit(heroEquipment.rentalType)}</span></p>}</div>
+          <div className="hero-picks" role="group" aria-label="Explore featured gear">{heroPicks.map((item, index) => <button className={heroIndex === index ? "hero-pick selected" : "hero-pick"} key={item.id} aria-pressed={heroIndex === index} onClick={() => setHeroIndex(index)}><Image unoptimized src={item.image} alt="" width={52} height={38} /><span>{item.category}</span></button>)}</div>
         </div>
       </section>
 
@@ -78,6 +83,8 @@ export function HomeExperience() {
       <section className="featured-band"><div className="section container featured-section">
         <div className="section-heading"><div><p className="eyebrow">READY FOR YOUR NEXT PROJECT</p><h2>Good equipment. Great possibilities.</h2></div><Link className="underlined-link" href="/equipment">View the collection</Link></div>
         <div className="equipment-tabs" role="group" aria-label="Featured equipment category">{["All equipment", ...categories].map(item => <button key={item} className={category === item ? "tab active" : "tab"} aria-pressed={category === item} onClick={() => setCategory(item)}>{category === item && <motion.span layoutId="featured-selection" className="tab-selection" transition={{ type: "tween", duration: reducedMotion ? 0 : 0.2 }} />}<span>{item === "Vehicles & Transportation" ? "Transport" : item}</span></button>)}</div>
+        {!highlights.data && <CatalogState error={highlights.error} retry={highlights.retry} />}
+        {highlights.data && featured.length === 0 && <div className="catalog-state"><p>No equipment in this category yet.</p><Link href={`/equipment?category=${encodeURIComponent(category === "All equipment" ? "" : category)}`}>Browse the collection</Link></div>}
         <motion.div layout={!reducedMotion} className="equipment-grid"><AnimatePresence initial={false} mode="popLayout">{featured.map(item => <motion.div layout={!reducedMotion} key={item.id} initial={{ opacity: 0, y: reducedMotion ? 0 : 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: reducedMotion ? 0 : 0.18 }}><EquipmentCard equipment={item} /></motion.div>)}</AnimatePresence></motion.div>
 
       </div></section>
@@ -94,7 +101,7 @@ export function HomeExperience() {
 
       <section className="section container benefits-section"><div className="benefit-grid">{[{ icon: "clock", title: "Just the time you need", text: "Daily, weekly or monthly. Each rate comes with its rental period clearly shown." }, { icon: "pin", title: "Made for local projects", text: "Find equipment across Bangladesh locations, closer to where you need it." }, { icon: "sliders", title: "A clearer comparison", text: "Compare equipment, rental periods and listed availability together before you decide." }].map(benefit => <article className="benefit" key={benefit.title}><Icon name={benefit.icon as "clock" | "pin" | "sliders"} size={24} /><h3>{benefit.title}</h3><p>{benefit.text}</p></article>)}</div></section>
 
-      <section className="recent-section"><div className="container recent-layout"><div><p className="eyebrow">A DIFFERENT KIND OF WEEKEND</p><h2>A bigger screen.<br />A better get-together.</h2><p>Something for the presentation, the playlist<br className="desktop-break" /> and the plans that bring people together.</p><Link className="underlined-link" href="/equipment?category=Electronics">Discover electronics</Link></div><div className="recent-grid">{demoEquipment.slice(2, 4).map(item => <EquipmentCard equipment={item} key={item.id} />)}</div></div></section>
+      <section className="recent-section"><div className="container recent-layout"><div><p className="eyebrow">RECENTLY ADDED</p><h2>New equipment.<br />Fresh possibilities.</h2><p>Something for the presentation, the playlist<br className="desktop-break" /> and the plans that bring people together.</p><Link className="underlined-link" href="/equipment">Explore recent equipment</Link></div><div className="recent-grid">{(highlights.data?.recent ?? []).map(item => <EquipmentCard equipment={item} key={item.id} />)}</div></div></section>
 
       <section className="section container reviews-section"><div className="section-heading"><div><p className="eyebrow">PEOPLE WITH PROJECTS</p><h2>A little gear goes a long way.</h2></div><p>Four illustrative rental stories.<br />Different projects, one practical idea.</p></div><div className="reviews-grid">{rentalStories.map(review => <article className="review" key={review.name}><span className="stars" aria-label="Illustrative rating: 5 out of 5">★★★★★</span><blockquote>“{review.text}”</blockquote><div className="review-person"><span className="avatar">{review.initials}</span><div><h3>{review.name}</h3><p>{review.project}</p></div></div></article>)}</div></section>
 

@@ -717,3 +717,20 @@ select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns=
   .owners-faq h2 { font-size:27px; }
   .owners-faq summary { font-size:14px; }
 }
+
+.catalog-state { padding:35px 20px; text-align:center; border:1px solid var(--line); border-radius:12px; background:white; margin:15px 0; }
+.catalog-state h2 { font-size:24px; margin-bottom:14px; }
+.catalog-state p { color:var(--muted); font-size:14px; line-height:1.8; }
+.price-filter { display:flex; flex-direction:column; gap:18px; }
+.price-filter .button { font-size:11px; padding:12px; }
+.catalog-pagination { display:flex; gap:18px; align-items:center; justify-content:center; margin:35px 0; font-size:12px; flex-wrap:wrap; }
+.catalog-pagination button:disabled { opacity:.45; cursor:not-allowed; }
+.favorite-remove { width:100%; margin:8px 0 16px; font-size:12px; }
+.favorites-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.favorites-grid>div { min-width:0; display:flex; flex-direction:column; }
+.favorites-grid .equipment-card { flex:1; height:auto; }
+.dashboard-sidebar { min-width:0; }
+.breadcrumb { flex-wrap:wrap; }
+@media(max-width:1100px) { .favorites-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:600px) { .favorites-grid { grid-template-columns:1fr; } .detail-actions { flex-wrap:wrap; } }
+@media(max-width:760px) { .dashboard-main { grid-template-columns:minmax(0,1fr); } }
