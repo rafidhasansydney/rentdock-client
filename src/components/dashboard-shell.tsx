@@ -10,6 +10,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const role = user?.role ?? "customer";
   const links = [{ href: "/dashboard", label: "Overview" }, { href: "/dashboard/profile", label: "My profile" }];
+  if (role === "customer") links.push({ href: "/dashboard/favorites", label: "My favorites" });
   if (role === "owner") links.push({ href: "/dashboard/owner", label: "Owner workspace" });
   if (role === "admin") links.push({ href: "/dashboard/admin", label: "Admin workspace" });
   return <main id="main" className="dashboard-main">
