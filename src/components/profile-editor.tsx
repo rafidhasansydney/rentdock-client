@@ -6,15 +6,19 @@ import { AccountRequestError, accountRequest, type AccountUser } from "@/lib/aut
 import { useAccount } from "./account-provider";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { PhotoField } from "./photo-field";
 
 function ProfileForm({ initial }: { initial: AccountUser }) {
   const [form, setForm] = useState({ name: initial.name, image: initial.image || "", phone: initial.phone || "", address: initial.address || "" });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [photoFailed, setPhotoFailed] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [photoValid, setPhotoValid] = useState(true);
   const { notify, refresh } = useAccount();
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (uploading || !photoValid) { setError("Choose a working profile photo before saving."); return; }
     setBusy(true);
     setError("");
     try {
@@ -33,11 +37,11 @@ function ProfileForm({ initial }: { initial: AccountUser }) {
       <div><h2>Personal details</h2><p className="field-help">Keep your contact details ready for your next rental.</p></div>
       <label htmlFor="profile-name">Full name<Input id="profile-name" autoComplete="name" value={form.name} minLength={2} maxLength={80} required disabled={busy} onChange={event => setForm({ ...form, name: event.target.value })} /></label>
       <label htmlFor="profile-email">Email address<Input id="profile-email" type="email" value={initial.email} readOnly aria-describedby="profile-email-help" /><span id="profile-email-help" className="field-help">Your sign-in email is linked to your account.</span></label>
-      <label htmlFor="profile-photo">Profile photo URL<Input id="profile-photo" type="url" value={form.image} placeholder="https://example.com/your-photo.jpg" maxLength={2048} required disabled={busy} onChange={event => { setForm({ ...form, image: event.target.value }); setPhotoFailed(false); }} /></label>
+      <PhotoField id="profile-photo" value={form.image} disabled={busy} onBusyChange={setUploading} onValidityChange={setPhotoValid} onChange={image => { setForm(current => ({ ...current, image })); setPhotoFailed(false); }} />
       <label htmlFor="profile-phone">Phone number<Input id="profile-phone" type="tel" autoComplete="tel" value={form.phone} placeholder="01712 345678" maxLength={20} disabled={busy} onChange={event => setForm({ ...form, phone: event.target.value })} /></label>
       <label htmlFor="profile-address">Address<textarea id="profile-address" className="rd-input" autoComplete="street-address" value={form.address} maxLength={500} rows={3} placeholder="Your address in Bangladesh" disabled={busy} onChange={event => setForm({ ...form, address: event.target.value })} /></label>
       {error && <p role="alert" className="form-error">{error}</p>}
-      <Button type="submit" disabled={busy} className="profile-save">{busy ? "Saving…" : "Save changes"}</Button>
+      <Button type="submit" disabled={busy || uploading || !photoValid} className="profile-save">{busy ? "Saving…" : "Save changes"}</Button>
     </form>
   </div>;
 }

@@ -9,6 +9,7 @@ import { useAccount } from "./account-provider";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Icon } from "./icons";
+import { PhotoField } from "./photo-field";
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const registering = mode === "register";
@@ -21,6 +22,8 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const [error, setError] = useState("");
   const [google, setGoogle] = useState<boolean | null>(null);
   const [password, setPassword] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [photoValid, setPhotoValid] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", image: "" });
 
   useEffect(() => {
@@ -33,6 +36,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    if (registering && (uploading || !photoValid)) { setError("Choose a working profile photo before creating your account."); return; }
     if (registering && (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || password.length < 6)) {
       setError("Use at least 6 characters, including an uppercase and a lowercase letter.");
       return;
@@ -90,13 +94,13 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         {google === false && <p id="google-help" className="field-help">Google sign-in is currently unavailable. Please use email.</p>}
         <div className="auth-divider"><span>or continue with email</span></div>
         <form className="account-form" onSubmit={submit}>
-          {registering && <label htmlFor="account-name">Full name<Input id="account-name" name="name" autoComplete="name" required minLength={2} maxLength={80} placeholder="Your full name" value={form.name} onChange={event => setForm({ ...form, name: event.target.value })} disabled={busy} /></label>}
-          <label htmlFor="account-email">Email address<Input id="account-email" name="email" type="email" autoComplete="email" required maxLength={254} placeholder="you@example.com" value={form.email} onChange={event => setForm({ ...form, email: event.target.value })} disabled={busy} /></label>
-          {registering && <label htmlFor="account-photo">Profile photo URL<Input id="account-photo" name="image" type="url" autoComplete="url" required maxLength={2048} placeholder="https://example.com/your-photo.jpg" value={form.image} onChange={event => setForm({ ...form, image: event.target.value })} disabled={busy} /><span className="field-help">Use a direct HTTPS link to your photo.</span></label>}
-          <label htmlFor="account-password">Password<span className="password-input"><Input id="account-password" name="password" type={visible ? "text" : "password"} autoComplete={registering ? "new-password" : "current-password"} required minLength={registering ? 6 : undefined} maxLength={128} placeholder={registering ? "Create a password" : "Enter your password"} value={password} onChange={event => setPassword(event.target.value)} disabled={busy} aria-describedby={registering ? "password-help" : undefined} /><button type="button" onClick={() => setVisible(!visible)} aria-label={visible ? "Hide password" : "Show password"}>{visible ? "Hide" : "Show"}</button></span></label>
+          {registering && <label htmlFor="account-name">Full name<Input id="account-name" name="name" autoComplete="name" required minLength={2} maxLength={80} placeholder="Your full name" value={form.name} onChange={event => setForm({ ...form, name: event.target.value })} disabled={busy || uploading} /></label>}
+          <label htmlFor="account-email">Email address<Input id="account-email" name="email" type="email" autoComplete="email" required maxLength={254} placeholder="you@example.com" value={form.email} onChange={event => setForm({ ...form, email: event.target.value })} disabled={busy || uploading} /></label>
+          {registering && <PhotoField id="account-photo" value={form.image} authenticated={false} disabled={busy || uploading} onBusyChange={setUploading} onValidityChange={setPhotoValid} onChange={image => setForm(current => ({ ...current, image }))} />}
+          <label htmlFor="account-password">Password<span className="password-input"><Input id="account-password" name="password" type={visible ? "text" : "password"} autoComplete={registering ? "new-password" : "current-password"} required minLength={registering ? 6 : undefined} maxLength={128} placeholder={registering ? "Create a password" : "Enter your password"} value={password} onChange={event => setPassword(event.target.value)} disabled={busy || uploading} aria-describedby={registering ? "password-help" : undefined} /><button type="button" onClick={() => setVisible(!visible)} aria-label={visible ? "Hide password" : "Show password"}>{visible ? "Hide" : "Show"}</button></span></label>
           {registering && <div id="password-help" className="password-rules"><span className={password.length >= 6 ? "met" : ""}>6+ characters</span><span className={/[A-Z]/.test(password) ? "met" : ""}>Uppercase</span><span className={/[a-z]/.test(password) ? "met" : ""}>Lowercase</span></div>}
           {(error || search.get("error")) && <p className="form-error" role="alert">{error || "Google sign-in was not completed. Try again or use email."}</p>}
-          <Button type="submit" disabled={busy} className="account-submit">{busy ? "Please wait…" : registering ? "Create account" : "Sign in"}<span aria-hidden="true">→</span></Button>
+          <Button type="submit" disabled={busy || uploading} className="account-submit">{busy ? "Please wait…" : registering ? "Create account" : "Sign in"}<span aria-hidden="true">→</span></Button>
         </form>
         <p className="auth-switch">{registering ? "Already have an account?" : "New to RentDock?"} <Link href={`${registering ? "/login" : "/register"}?next=${encodeURIComponent(next)}`}>{registering ? "Sign in" : "Create an account"}</Link></p>
       </section>
