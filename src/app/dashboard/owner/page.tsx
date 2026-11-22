@@ -1,3 +1,3 @@
-import { RoleWorkspace } from "@/components/role-workspace";
+import { OwnerOverview } from "@/components/owner-overview";
 
-export default function OwnerPage() { return <RoleWorkspace role="owner" />; }
+export default function OwnerPage() { return <OwnerOverview />; }
