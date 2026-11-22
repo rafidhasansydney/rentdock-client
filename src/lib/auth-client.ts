@@ -58,7 +58,7 @@ export async function accountRequest<T>(path: string, options: RequestInit = {})
   } catch {
     throw new AccountRequestError("We could not reach your account. Check your connection and try again.", 503);
   }
-  const payload = await response.json();
+  const payload = await response.json().catch(() => { throw new AccountRequestError("Your request could not be completed. Please try again shortly.", response.ok ? 502 : response.status); });
   if (!response.ok) throw new AccountRequestError(payload.error?.message ?? "The request could not be completed.", response.status);
   return payload as T;
 }
