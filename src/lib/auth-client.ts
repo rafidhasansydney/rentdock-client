@@ -44,13 +44,16 @@ export async function accountRequest<T>(path: string, options: RequestInit = {})
     throw new AccountRequestError(status === 401 ? "Your session has ended. Sign in again." : "We could not reach your account. Try again shortly.", status);
   }
   if (!token.data?.token) throw new AccountRequestError("Your session has ended. Sign in again.", 401);
+  const headers = new Headers(options.headers);
+  headers.set("Authorization", `Bearer ${token.data.token}`);
+  if (typeof options.body === "string" && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   let response: Response;
   try {
     response = await fetch(`/api${path}`, {
       ...options,
       credentials: "include",
       cache: "no-store",
-      headers: { ...options.headers, Authorization: `Bearer ${token.data.token}`, ...(options.body ? { "Content-Type": "application/json" } : {}) },
+      headers,
     });
   } catch {
     throw new AccountRequestError("We could not reach your account. Check your connection and try again.", 503);
