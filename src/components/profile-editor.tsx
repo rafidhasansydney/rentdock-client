@@ -7,6 +7,7 @@ import { useAccount } from "./account-provider";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { PhotoField } from "./photo-field";
+import { AdminPasswordSetup } from "./admin-password-setup";
 
 function ProfileForm({ initial }: { initial: AccountUser }) {
   const [form, setForm] = useState({ name: initial.name, image: initial.image || "", phone: initial.phone || "", address: initial.address || "" });
@@ -59,5 +60,6 @@ export function ProfileEditor() {
   }, [user?.id, attempt]);
   return <><p className="eyebrow">YOUR ACCOUNT DETAILS</p><h1 className="dashboard-title">My profile</h1><p className="dashboard-lead">A little about you. Always in your control.</p>
     {state.profile ? <ProfileForm key={state.profile.id} initial={state.profile} /> : state.error ? <div className="account-error-panel"><p role="alert">{state.error}</p><Button onClick={() => { setState({}); setAttempt(attempt + 1); }}>Try again</Button></div> : <p role="status" className="account-loading">Loading your profile…</p>}
+    {state.profile?.role === "admin" && <AdminPasswordSetup />}
   </>;
 }
