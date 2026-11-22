@@ -10,8 +10,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const role = user?.role ?? "customer";
   const links = [{ href: "/dashboard", label: "Overview" }, { href: "/dashboard/profile", label: "My profile" }];
-  if (role === "customer") links.push({ href: "/dashboard/favorites", label: "My favorites" });
-  if (role === "owner") links.push({ href: "/dashboard/owner", label: "Owner workspace" }, { href: "/dashboard/owner/equipment", label: "My equipment" }, { href: "/dashboard/owner/equipment/new", label: "Add equipment" });
+  if (role === "customer") links.push({ href: "/dashboard/rentals", label: "My rentals" }, { href: "/dashboard/favorites", label: "My favorites" });
+  if (role === "owner") links.push({ href: "/dashboard/owner", label: "Owner workspace" }, { href: "/dashboard/owner/equipment", label: "My equipment" }, { href: "/dashboard/owner/equipment/new", label: "Add equipment" }, { href: "/dashboard/owner/rentals", label: "My equipment rentals" });
   if (role === "admin") links.push({ href: "/dashboard/admin", label: "Admin workspace" });
   return <main id="main" className="dashboard-main">
     <aside className="dashboard-sidebar">
