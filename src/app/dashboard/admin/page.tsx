@@ -1,3 +1,2 @@
-import { RoleWorkspace } from "@/components/role-workspace";
-
-export default function AdminPage() { return <RoleWorkspace role="admin" />; }
+import { DashboardAnalytics } from "@/components/dashboard-analytics";
+export default function AdminPage() { return <DashboardAnalytics />; }
