@@ -5,7 +5,7 @@ import { accountRequest } from "./auth-client";
 import type { Equipment } from "./demo-equipment";
 
 export type EquipmentResults = { items: Equipment[]; total: number; page: number; pages: number; limit: number };
-export type EquipmentDetails = Equipment & { quantity: number; condition: string; included: string[]; terms: string[]; owner: { name: string }; isSample?: boolean };
+export type EquipmentDetails = Equipment & { quantity: number; condition: string; included: string[]; terms: string[]; owner: { name: string }; isSample?: boolean; bookable?: boolean };
 export type Highlights = { featured: Equipment[]; recent: Equipment[] };
 
 export function useCatalogData<T>(path: string, authenticated = false) {
