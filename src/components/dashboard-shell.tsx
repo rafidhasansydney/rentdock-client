@@ -12,7 +12,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const links = [{ href: "/dashboard", label: "Overview" }, { href: "/dashboard/profile", label: "My profile" }];
   if (role === "customer") links.push({ href: "/dashboard/rentals", label: "My rentals" }, { href: "/dashboard/favorites", label: "My favorites" });
   if (role === "owner") links.push({ href: "/dashboard/owner", label: "Owner workspace" }, { href: "/dashboard/owner/equipment", label: "My equipment" }, { href: "/dashboard/owner/equipment/new", label: "Add equipment" }, { href: "/dashboard/owner/rentals", label: "My equipment rentals" });
-  if (role === "admin") links.push({ href: "/dashboard/admin", label: "Admin workspace" });
+  if (role === "admin") links.push({ href: "/dashboard/admin", label: "Admin workspace" }, { href: "/dashboard/admin/users", label: "All users" }, { href: "/dashboard/admin/equipment", label: "All equipment" }, { href: "/dashboard/admin/rentals", label: "All rentals" });
   return <main id="main" className="dashboard-main">
     <aside className="dashboard-sidebar">
       <div className="dashboard-identity"><span className="account-monogram">{user?.name?.slice(0, 1).toUpperCase()}</span><div><strong>{user?.name}</strong><span className="account-role">{role}</span></div></div>
