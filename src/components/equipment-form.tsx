@@ -10,10 +10,10 @@ import { PhotoField } from "./photo-field";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
-export function EquipmentForm({ initial }: { initial?: OwnerListing }) {
+export function EquipmentForm({ initial, administration = false }: { initial?: OwnerListing & { ownerEmail?: string }; administration?: boolean }) {
   const router = useRouter();
   const { user, notify } = useAccount();
-  const [form, setForm] = useState<EquipmentInput>(() => initial ? { name: initial.name, description: initial.description, category: initial.category, location: initial.location, price: String(initial.price), rentalType: initial.rentalType, quantity: String(initial.quantity), condition: initial.condition, brand: initial.brand, model: initial.model, image: initial.image, included: initial.included.join("\n"), terms: initial.terms.join("\n") } : { name: "", description: "", category: "", location: "", price: "", rentalType: "Daily", quantity: "1", condition: "Good", brand: "", model: "", image: "", included: "", terms: "" });
+  const [form, setForm] = useState<EquipmentInput>(() => initial ? { name: initial.name, description: initial.description, category: initial.category, location: initial.location, price: String(initial.price), rentalType: initial.rentalType, quantity: String(initial.quantity), condition: initial.condition, brand: initial.brand || "", model: initial.model || "", image: initial.image, included: (initial.included || []).join("\n"), terms: (initial.terms || []).join("\n") } : { name: "", description: "", category: "", location: "", price: "", rentalType: "Daily", quantity: "1", condition: "Good", brand: "", model: "", image: "", included: "", terms: "" });
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [photoValid, setPhotoValid] = useState(Boolean(initial?.image));
@@ -26,9 +26,9 @@ export function EquipmentForm({ initial }: { initial?: OwnerListing }) {
     setBusy(true); setError("");
     try {
       const body = { ...form, price: Number(form.price), quantity: Number(form.quantity), included: lines(form.included), terms: lines(form.terms), ...(initial ? { version: initial.version } : {}) };
-      const result = await accountRequest<{ item: OwnerListing }>(initial ? `/owner/equipment/${encodeURIComponent(initial.id)}` : "/owner/equipment", { method: initial ? "PATCH" : "POST", body: JSON.stringify(body) });
-      notify(initial ? "Your changes were saved and sent for review." : "Your equipment was submitted for review.");
-      router.replace(`/dashboard/owner/equipment/${result.item.id}`);
+      const result = await accountRequest<{ item: OwnerListing }>(initial ? `/${administration ? "admin" : "owner"}/equipment/${encodeURIComponent(initial.id)}` : "/owner/equipment", { method: initial ? "PATCH" : "POST", body: JSON.stringify(body) });
+      notify(administration ? "Listing details saved. Review status is unchanged." : initial ? "Your changes were saved and sent for review." : "Your equipment was submitted for review.");
+      router.replace(`/dashboard/${administration ? "admin" : "owner"}/equipment/${result.item.id}`);
     } catch (failure) { const message = failure instanceof Error ? failure.message : "The listing could not be saved."; setError(message); notify(message, "error"); }
     finally { setBusy(false); }
   }
@@ -50,8 +50,8 @@ export function EquipmentForm({ initial }: { initial?: OwnerListing }) {
       <label htmlFor="equipment-included">Included equipment and accessories<textarea className="rd-input" id="equipment-included" rows={3} maxLength={10000} value={form.included} disabled={disabled} onChange={event => set("included", event.target.value)} placeholder="One accessory per line" /><span className="field-help">Optional. Up to 20 lines.</span></label>
       <label htmlFor="equipment-terms">Rental terms and conditions<textarea className="rd-input" id="equipment-terms" rows={4} required maxLength={10000} value={form.terms} disabled={disabled} onChange={event => set("terms", event.target.value)} placeholder="Collection, care and return requirements, one per line" /></label>
     </div></section>
-    <div className="listing-submission-note"><strong>Submitted by {user?.name}</strong><span>{user?.email}</span><p>{initial ? "Saving changes sends this listing back for approval." : "Your listing starts as Pending and appears in the public collection after approval."}</p></div>
+    <div className="listing-submission-note"><strong>{administration ? "Listed by" : "Submitted by"} {administration ? initial?.ownerName : user?.name}</strong><span>{administration ? initial?.ownerEmail || "Illustrative sample" : user?.email}</span><p>{administration ? "Owner identity and review status are kept. Active rentals must finish before editing." : initial ? "Saving changes sends this listing back for approval." : "Your listing starts as Pending and appears in the public collection after approval."}</p></div>
     {error && <p className="form-error" role="alert">{error}</p>}
-    <div className="owner-actions"><Button type="submit" disabled={disabled || !form.image || !photoValid}>{busy ? "Saving…" : initial ? "Save and submit for review" : "Submit equipment"}</Button><Button asChild variant="ghost"><Link href="/dashboard/owner/equipment">Cancel</Link></Button></div>
+    <div className="owner-actions"><Button type="submit" disabled={disabled || !form.image || !photoValid}>{busy ? "Saving…" : administration ? "Save listing details" : initial ? "Save and submit for review" : "Submit equipment"}</Button><Button asChild variant="ghost"><Link href={`/dashboard/${administration ? "admin" : "owner"}/equipment`}>Cancel</Link></Button></div>
   </form>;
 }
