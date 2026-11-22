@@ -1,0 +1,8 @@
+export type RentalQuote = { days: number; periods: number; unitAmount: number; amountMinor: number; currency: "bdt"; rentalType: string; availableQuantity: number; quoteVersion: number; paymentAvailable: boolean };
+export type CheckoutAttempt = { id: string; equipmentId: string; equipmentName: string; startDate: string; endDate: string; quantity: number; amountMinor: number; currency: "bdt"; state: "creating" | "open" | "paid" | "completed" | "expired"; expiresAt: string; checkoutUrl?: string };
+export type Rental = { id: string; equipmentId: string; equipmentName: string; startDate: string; endDate: string; quantity: number; amountMinor: number; currency: "bdt"; bookingStatus: string; paymentStatus: string; createdAt: string; transactionId: string; customerName: string; customerEmail: string; contactNumber: string; deliveryAddress: string; notes: string };
+export type CheckoutResult = { attempt: CheckoutAttempt; rental?: Rental | null };
+export type RentalsResult = { items: Rental[]; total: number; page: number; pages: number; pending: CheckoutAttempt[] };
+export function todayInDhaka() { return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dhaka", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
+export function checkoutAddress(value?: string) { try { const url = new URL(value || ""); return url.protocol === "https:" && url.hostname === "checkout.stripe.com" && !url.username && !url.password ? url.href : null; } catch { return null; } }
+export function bookingDate(value: string) { return new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Dhaka", day: "numeric", month: "short", year: "numeric" }).format(new Date(value)); }
